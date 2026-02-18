@@ -22,11 +22,22 @@ export interface FoodItem {
   category: 'breakfast' | 'lunch' | 'dinner' | 'snack';
 }
 
+export interface Meal {
+  name: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+  imagePromptKeywords: string;
+  preparationSteps: string[];
+  customizations: string[];
+}
+
 export interface MealPlan {
-  breakfast: string;
-  lunch: string;
-  dinner: string;
-  snack: string;
+  breakfast: Meal;
+  lunch: Meal;
+  dinner: Meal;
+  snack: Meal;
 }
 
 export interface Workout {

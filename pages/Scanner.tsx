@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { analyzeFoodImage } from '../services/geminiService';
+import { analyzeFoodImage } from '../services/geminiService.ts';
 
 interface ScannerProps {
   onClose: () => void;
@@ -11,6 +11,7 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
 
   useEffect(() => {
@@ -25,6 +26,7 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         }
       } catch (err) {
         console.error("Camera error:", err);
+        setError("Camera permission denied or unavailable.");
       }
     };
     startCamera();
@@ -36,6 +38,7 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const captureAndAnalyze = async () => {
     if (!videoRef.current || !canvasRef.current) return;
     setAnalyzing(true);
+    setError(null);
     
     const context = canvasRef.current.getContext('2d');
     if (context) {
@@ -47,8 +50,13 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       try {
         const data = await analyzeFoodImage(base64);
         setResult(data);
-      } catch (err) {
-        console.error("Analysis failed", err);
+      } catch (err: any) {
+        console.error("Scanner Analysis failed", err);
+        if (err.message?.includes("quota") || err.message?.includes("429")) {
+          setError("AI Quota exceeded. Please use manual entry.");
+        } else {
+          setError("Analysis synchronization failed. Try again.");
+        }
       } finally {
         setAnalyzing(false);
       }
@@ -78,21 +86,30 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
             <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl"></div>
             <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-xl"></div>
           </div>
-          <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 z-20">
-            <div className="bg-black/40 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${analyzing ? 'bg-coral animate-pulse' : 'bg-primary'}`}></span>
-              {analyzing ? 'Syncing with AI...' : 'Hold steady for better accuracy'}
-            </div>
+          <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 z-20 w-full px-10 text-center">
+            {error ? (
+              <div className="bg-coral/20 backdrop-blur-md border border-coral/30 text-coral px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest inline-block">
+                {error}
+              </div>
+            ) : (
+              <div className="bg-black/40 backdrop-blur-sm text-white px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 justify-center mx-auto w-fit">
+                <span className={`w-1.5 h-1.5 rounded-full ${analyzing ? 'bg-coral animate-pulse' : 'bg-primary'}`}></span>
+                {analyzing ? 'Syncing with AI...' : 'Hold steady for better accuracy'}
+              </div>
+            )}
           </div>
         </>
       )}
 
       {/* Top Controls */}
       <div className="absolute top-12 left-0 right-0 px-6 flex justify-between items-center z-50">
-        <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+        <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-90 transition-all">
           <span className="material-icons-round">close</span>
         </button>
-        <button className="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-sm font-semibold">
+        <button 
+          onClick={() => alert("Manual Entry Initialized...")}
+          className="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-sm font-semibold active:scale-90 transition-all"
+        >
           Manual Entry
         </button>
       </div>
@@ -137,8 +154,8 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                 Confirm & Log
               </button>
               <button 
-                onClick={() => setResult(null)}
-                className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400"
+                onClick={() => { setResult(null); setError(null); }}
+                className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 active:scale-90 transition-all"
               >
                 <span className="material-icons-round">refresh</span>
               </button>
@@ -149,9 +166,9 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
             <button 
               onClick={captureAndAnalyze}
               disabled={analyzing}
-              className={`w-20 h-20 rounded-full border-4 border-white flex items-center justify-center ${analyzing ? 'opacity-50' : 'active:scale-90'}`}
+              className={`w-20 h-20 rounded-full border-4 border-white flex items-center justify-center transition-all ${analyzing ? 'opacity-50 scale-90' : 'active:scale-90 hover:scale-105'}`}
             >
-              <div className="w-16 h-16 rounded-full bg-white"></div>
+              <div className={`rounded-full bg-white transition-all ${analyzing ? 'w-8 h-8 rounded-lg animate-pulse' : 'w-16 h-16'}`}></div>
             </button>
           </div>
         )}

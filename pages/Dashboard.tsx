@@ -1,25 +1,61 @@
 
-import React, { useEffect, useState } from 'react';
-import { getAdaptiveWorkout } from '../services/geminiService';
-import { Workout } from '../types';
+import React, { useEffect, useState, useCallback } from 'react';
+import { getAdaptiveWorkout } from '../services/geminiService.ts';
+import { Workout } from '../types.ts';
+
+const FALLBACK_WORKOUT: Workout = {
+  name: "Dynamic Bodyweight Protocol",
+  duration: 25,
+  calories: 180,
+  intensity: 'moderate',
+  reason: "Optimized maintenance circuit while sync services are intermittent."
+};
+
+const CACHE_KEY = 'nutrisync_dashboard_workout';
 
 const Dashboard: React.FC = () => {
   const [recommendation, setRecommendation] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRecommendation = useCallback(async (force = false) => {
+    setLoading(true);
+    setError(null);
+
+    // Try loading from cache first
+    if (!force) {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        try {
+          setRecommendation(JSON.parse(cached));
+          setLoading(false);
+          return;
+        } catch (e) {
+          localStorage.removeItem(CACHE_KEY);
+        }
+      }
+    }
+
+    try {
+      const workout = await getAdaptiveWorkout({ protein: 85, carbs: 210, fats: 42, calories: 1850 }, "Lean muscle growth");
+      setRecommendation(workout);
+      localStorage.setItem(CACHE_KEY, JSON.stringify(workout));
+    } catch (err: any) {
+      console.error("Dashboard AI Error:", err);
+      if (err.message?.includes("quota") || err.message?.includes("429")) {
+        setError("AI Quota exceeded. Using local metabolic protocol.");
+      } else {
+        setError("Synchronization intermittent. Using fallback protocol.");
+      }
+      setRecommendation(FALLBACK_WORKOUT);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchRecommendation = async () => {
-      try {
-        const workout = await getAdaptiveWorkout({ protein: 85, carbs: 210, fats: 42, calories: 1850 }, "Lean muscle growth");
-        setRecommendation(workout);
-      } catch (error) {
-        console.error("AI Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchRecommendation();
-  }, []);
+  }, [fetchRecommendation]);
 
   const handleNotificationClick = () => {
     console.log("Dashboard: Notification bell clicked");
@@ -33,7 +69,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
-      {/* Header - Fixed Height Header inside the view */}
+      {/* Header */}
       <header className="px-6 py-4 flex items-center justify-between shrink-0 z-20 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-transparent">
         <div className="flex items-center gap-3">
           <div className="relative cursor-pointer active:scale-95 transition-transform" onClick={() => console.log("Dashboard: Avatar clicked")}>
@@ -62,7 +98,25 @@ const Dashboard: React.FC = () => {
       <div className="flex-1 overflow-y-auto hide-scrollbar scroll-smooth">
         <div className="flex flex-col px-6 pb-36">
           
-          {/* Calorie Ring Section - Dynamic Hero Area */}
+          {/* Error Banner */}
+          {error && (
+            <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="bg-coral/10 border border-coral/20 rounded-2xl p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="material-icons-round text-coral text-lg">cloud_off</span>
+                  <p className="text-[11px] font-black text-coral uppercase tracking-wider">{error}</p>
+                </div>
+                <button 
+                  onClick={() => fetchRecommendation(true)}
+                  className="bg-coral/20 text-coral px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Calorie Ring Section */}
           <section className="py-12 flex flex-col items-center justify-center relative min-h-[360px]">
             <div className="relative w-64 h-64 md:w-72 md:h-72 flex items-center justify-center">
               <svg className="absolute inset-0 w-full h-full transform -rotate-90 pointer-events-none drop-shadow-2xl">
@@ -94,7 +148,7 @@ const Dashboard: React.FC = () => {
             </div>
           </section>
 
-          {/* AI Recommendation Card - FIXED CLICKING */}
+          {/* AI Recommendation Card */}
           <section className="mb-10">
             <div 
               onClick={handleStartWorkout}
@@ -130,7 +184,7 @@ const Dashboard: React.FC = () => {
           <section className="mb-8">
             <div className="flex items-center justify-between mb-6 px-1">
               <h2 className="text-2xl font-black dark:text-white tracking-tight">Vitals</h2>
-              <button onClick={() => console.log("Dashboard: Full stats clicked")} className="text-[11px] font-black text-primary uppercase tracking-widest bg-primary/10 px-4 py-2 rounded-full active:scale-95 transition-transform">Details</button>
+              <button onClick={() => console.log("Dashboard: Details clicked")} className="text-[11px] font-black text-primary uppercase tracking-widest bg-primary/10 px-4 py-2 rounded-full active:scale-95 transition-transform">Details</button>
             </div>
             <div className="grid grid-cols-3 gap-4">
               {[
