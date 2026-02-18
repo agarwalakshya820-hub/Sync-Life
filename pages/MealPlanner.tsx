@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { getSmartMealPlan } from '../services/geminiService';
+import { getSmartMealPlan } from '../services/geminiService.ts';
 
 interface Day {
   name: string;

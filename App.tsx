@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { NavTab } from './types';
-import Landing from './pages/Landing';
-import Dashboard from './pages/Dashboard';
-import Scanner from './pages/Scanner';
-import MealPlanner from './pages/MealPlanner';
-import Profile from './pages/Profile';
-import Navigation from './components/Navigation';
+import { NavTab } from './types.ts';
+import Landing from './pages/Landing.tsx';
+import Dashboard from './pages/Dashboard.tsx';
+import Scanner from './pages/Scanner.tsx';
+import MealPlanner from './pages/MealPlanner.tsx';
+import Profile from './pages/Profile.tsx';
+import Navigation from './components/Navigation.tsx';
 
 const App: React.FC = () => {
   const [hasOnboarded, setHasOnboarded] = useState(false);
