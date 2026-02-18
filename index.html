@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NutriSync AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "forest": "#0B2B26",
+                        "coral": "#FF7E67",
+                        "sage": "#2D5A53",
+                        "mint": "#EBF5F1",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#0a0f0b",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "Lexend", "sans-serif"],
+                        "serif": ["Newsreader", "serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            background-color: #0a0f0b;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .scanner-line {
+            background: linear-gradient(to bottom, transparent, #13ec5b, transparent);
+            height: 100px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            animation: scan 3s ease-in-out infinite;
+            opacity: 0.4;
+        }
+        @keyframes scan {
+            0% { transform: translateY(20vh); }
+            50% { transform: translateY(60vh); }
+            100% { transform: translateY(20vh); }
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0"
+  }
+}
+</script>
+</head>
+<body class="bg-background-dark font-display text-white">
+    <div id="root"></div>
+</body>
+</html>

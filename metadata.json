@@ -1,0 +1,7 @@
+{
+  "name": "NutriSync AI",
+  "description": "A premium AI-powered wellness app synchronizing fitness and nutrition with real-time food scanning, adaptive workouts, and smart meal planning.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
