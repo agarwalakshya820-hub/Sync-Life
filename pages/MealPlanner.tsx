@@ -140,11 +140,7 @@ const MealPlanner: React.FC = () => {
       console.error("Gemini API error:", err);
       
       // 3. Graceful Fallback
-      if (err.message === "QUOTA_EXHAUSTED") {
-        setError("AI Quota exceeded. Showing optimized default protocol.");
-      } else {
-        setError("Synchronization intermittent. Using fallback plan.");
-      }
+      setError(err.message || "Synchronization intermittent. Using fallback plan.");
       
       setMeals(FALLBACK_PLAN);
       updateImages(FALLBACK_PLAN);

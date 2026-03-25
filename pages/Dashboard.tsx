@@ -39,11 +39,7 @@ const Dashboard: React.FC = () => {
       localStorage.setItem(CACHE_KEY, JSON.stringify(workout));
     } catch (err: any) {
       console.error("Dashboard AI Error:", err);
-      if (err.message === "QUOTA_EXHAUSTED") {
-        setError("AI Sync limit reached. Using local protocol.");
-      } else {
-        setError("Sync connection intermittent.");
-      }
+      setError(err.message || "Sync connection intermittent.");
       setRecommendation(FALLBACK_WORKOUT);
     } finally {
       setLoading(false);
@@ -81,16 +77,41 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        <section className="py-10 flex flex-col items-center justify-center min-h-[300px]">
-          <div className="relative w-60 h-60 flex items-center justify-center">
-            <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-              <circle className="text-slate-800/50" cx="50%" cy="50%" r="44%" fill="transparent" stroke="currentColor" strokeWidth="12"></circle>
-              <circle className="text-primary transition-all duration-1000" cx="50%" cy="50%" r="44%" fill="transparent" stroke="currentColor" strokeWidth="12" strokeDasharray="450" strokeDashoffset="120" strokeLinecap="round"></circle>
+        <section className="py-10 flex flex-col items-center justify-center">
+          {/* Circle Container */}
+          <div className="w-64 h-64 flex items-center justify-center">
+            <svg width="220" height="220" className="transform -rotate-90">
+              <circle
+                cx="110"
+                cy="110"
+                r="90"
+                stroke="#1f2937"
+                strokeWidth="14"
+                fill="none"
+              />
+              <circle
+                cx="110"
+                cy="110"
+                r="90"
+                stroke="#22c55e"
+                strokeWidth="14"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray="565"
+                strokeDashoffset="68"
+                className="transition-all duration-1000"
+              />
             </svg>
-            <div className="z-10 text-center">
-              <span className="text-6xl font-black text-white block">1,240</span>
-              <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">kcal left</span>
-            </div>
+          </div>
+
+          {/* Percentage BELOW circle */}
+          <div className="text-white text-5xl font-black mt-6">
+            88%
+          </div>
+
+          {/* Status text */}
+          <div className="text-primary text-xs font-black mt-2 tracking-[0.2em] uppercase">
+            Metabolic Efficiency
           </div>
         </section>
 

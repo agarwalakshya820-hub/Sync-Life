@@ -78,10 +78,9 @@ const Profile: React.FC = () => {
   };
 
   // SVG Gauge calculations
-  const radius = 60;
+  const radius = 90;
   const strokeWidth = 14;
-  const normalizedRadius = radius - strokeWidth / 2;
-  const circumference = normalizedRadius * Math.PI; 
+  const circumference = 2 * Math.PI * radius; 
   const strokeDashoffset = circumference - (healthScore / 100) * circumference;
 
   return (
@@ -227,21 +226,44 @@ const Profile: React.FC = () => {
           <div className="bg-slate-800/40 rounded-[2.5rem] p-10 border border-slate-800 shadow-sm flex flex-col items-center justify-center text-center">
             <span className="text-[9px] uppercase tracking-[0.4em] text-slate-500 font-black mb-8">System Sync Accuracy</span>
             
-            <div className="relative w-full flex items-center justify-center h-28">
-              <svg className="absolute transform" width="220" height="120" viewBox="0 0 160 90">
-                <path d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke="currentColor" strokeWidth="12" strokeLinecap="round" className="text-slate-900" />
-                <path 
-                  d="M 20 80 A 60 60 0 0 1 140 80" fill="none" stroke={nameColor} strokeWidth="12" strokeLinecap="round" strokeDasharray={`${circumference} ${circumference}`}
-                  style={{ 
-                    strokeDashoffset: isFinite(strokeDashoffset) ? strokeDashoffset : circumference, 
-                    transition: 'stroke-dashoffset 2.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
-                    filter: `drop-shadow(0 0 8px ${nameColor}44)` 
-                  }}
-                />
-              </svg>
-              <div className="absolute flex flex-col items-center justify-center top-2">
-                <span className="text-5xl font-black text-white leading-none tracking-tighter">{healthScore}%</span>
-                <span className="text-[10px] text-primary font-black uppercase mt-2 tracking-[0.2em]">Active</span>
+            <div className="flex flex-col items-center justify-center">
+              {/* Circle Container */}
+              <div className="w-64 h-64 flex items-center justify-center">
+                <svg width="220" height="220" className="transform -rotate-90">
+                  <circle
+                    cx="110"
+                    cy="110"
+                    r={radius}
+                    stroke="#1f2937"
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                  />
+                  <circle
+                    cx="110"
+                    cy="110"
+                    r={radius}
+                    stroke={nameColor}
+                    strokeWidth={strokeWidth}
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    style={{ 
+                      strokeDashoffset: isFinite(strokeDashoffset) ? strokeDashoffset : circumference, 
+                      transition: 'stroke-dashoffset 2.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+                      filter: `drop-shadow(0 0 8px ${nameColor}44)` 
+                    }}
+                  />
+                </svg>
+              </div>
+
+              {/* Percentage BELOW circle */}
+              <div className="text-white text-5xl font-black mt-6">
+                {healthScore}%
+              </div>
+
+              {/* Status text */}
+              <div className="text-primary text-sm mt-2 tracking-widest font-black uppercase">
+                Active
               </div>
             </div>
 

@@ -15,14 +15,14 @@ const parseAIError = (error: any): string => {
     errorString.includes("RESOURCE_EXHAUSTED") ||
     errorString.includes("limit")
   ) {
-    return "QUOTA_EXHAUSTED";
+    return "QUOTA_EXHAUSTED: AI limit reached. Please try again later or use manual entry.";
   }
 
-  if (errorString.includes("API key")) {
-    return "API_KEY_INVALID: Please ensure your Gemini API key is configured correctly.";
+  if (errorString.includes("API key") || errorString.includes("API_KEY_MISSING") || errorString.includes("API_KEY_INVALID")) {
+    return "API_KEY_ERROR: Gemini API Key is missing or invalid. Check your environment configuration.";
   }
   
-  return errorString || "An unexpected sync error occurred.";
+  return errorString || "An unexpected synchronization error occurred.";
 };
 
 /**
@@ -30,9 +30,9 @@ const parseAIError = (error: any): string => {
  * Throws a clear error if the API key is missing.
  */
 const getAI = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("API_KEY_MISSING: Environment variable process.env.API_KEY is not defined.");
+  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    throw new Error("API_KEY_MISSING: Gemini API key is not defined in the environment.");
   }
   return new GoogleGenAI({ apiKey });
 };

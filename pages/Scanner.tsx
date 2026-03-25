@@ -52,11 +52,8 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         setResult(data);
       } catch (err: any) {
         console.error("Scanner Analysis failed", err);
-        if (err.message?.includes("quota") || err.message?.includes("429")) {
-          setError("AI Quota exceeded. Please use manual entry.");
-        } else {
-          setError("Analysis synchronization failed. Try again.");
-        }
+        // Display the actual error message from the service
+        setError(err.message || "Analysis synchronization failed. Try again.");
       } finally {
         setAnalyzing(false);
       }
