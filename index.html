@@ -6,70 +6,13 @@
     <title>NutriSync AI</title>
     <!-- Favicon data-URI to prevent 404 -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
     <script>
         // Ensure process.env exists without clobbering platform-injected values
         window.process = window.process || {};
         window.process.env = window.process.env || {};
-        
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#13ec5b",
-                        "forest": "#0B2B26",
-                        "coral": "#FF7E67",
-                        "sage": "#2D5A53",
-                        "mint": "#EBF5F1",
-                        "background-light": "#f6f8f6",
-                        "background-dark": "#0a0f0b",
-                    },
-                    fontFamily: {
-                        "display": ["Manrope", "Lexend", "sans-serif"],
-                        "serif": ["Newsreader", "serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.5rem",
-                        "lg": "1rem",
-                        "xl": "1.5rem",
-                        "2xl": "2.5rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
     </script>
-    <style>
-        body {
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            background-color: #0a0f0b;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .scanner-line {
-            background: linear-gradient(to bottom, transparent, #13ec5b, transparent);
-            height: 100px;
-            width: 100%;
-            position: absolute;
-            top: 0;
-            animation: scan 3s ease-in-out infinite;
-            opacity: 0.4;
-        }
-        @keyframes scan {
-            0% { transform: translateY(20vh); }
-            50% { transform: translateY(60vh); }
-            100% { transform: translateY(20vh); }
-        }
-    </style>
 <script type="importmap">
 {
   "imports": {
@@ -82,12 +25,10 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body class="bg-background-dark font-display text-white">
     <div id="root"></div>
     <!-- Entry point for the application -->
-    <script type="module" src="./index.tsx"></script>
-<script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

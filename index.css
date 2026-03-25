@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #13ec5b;
+  --color-forest: #0B2B26;
+  --color-coral: #FF7E67;
+  --color-sage: #2D5A53;
+  --color-mint: #EBF5F1;
+  --color-background-light: #f6f8f6;
+  --color-background-dark: #0a0f0b;
+
+  --font-display: "Manrope", "Lexend", sans-serif;
+  --font-serif: "Newsreader", serif;
+
+  --radius-DEFAULT: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2.5rem;
+}
+
+@layer base {
+  body {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    background-color: #0a0f0b;
+  }
+}
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scanner-line {
+    background: linear-gradient(to bottom, transparent, #13ec5b, transparent);
+    height: 100px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    animation: scan 3s ease-in-out infinite;
+    opacity: 0.4;
+  }
+}
+
+@keyframes scan {
+  0% { transform: translateY(20vh); }
+  50% { transform: translateY(60vh); }
+  100% { transform: translateY(20vh); }
+}
