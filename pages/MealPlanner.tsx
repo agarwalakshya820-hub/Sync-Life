@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { getSmartMealPlan } from '../services/ollamaService.ts';
+import { getSmartMealPlan } from '../services/geminiService.ts';
 import { Meal } from '../types.ts';
 
 interface Day {

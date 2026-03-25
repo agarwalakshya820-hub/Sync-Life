@@ -13,7 +13,11 @@ const Login: React.FC = () => {
       await signInWithPopup(auth, googleProvider);
     } catch (err: any) {
       console.error("Login failed:", err);
-      setError(err.message || "Login failed. Please try again.");
+      if (err.code === 'auth/unauthorized-domain') {
+        setError("This domain is not authorized for login. Please add it to your Firebase Console -> Authentication -> Settings -> Authorized domains.");
+      } else {
+        setError(err.message || "Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

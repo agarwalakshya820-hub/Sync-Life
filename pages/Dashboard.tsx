@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { getAdaptiveWorkout } from '../services/ollamaService.ts';
+import { getAdaptiveWorkout } from '../services/geminiService.ts';
 import { Workout } from '../types.ts';
+import { useAuth } from '../components/AuthContext.tsx';
 
 const FALLBACK_WORKOUT: Workout = {
   name: "Maintenance Protocol",
@@ -14,6 +15,7 @@ const FALLBACK_WORKOUT: Workout = {
 const CACHE_KEY = 'nutrisync_dashboard_workout';
 
 const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const [recommendation, setRecommendation] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,12 +57,12 @@ const Dashboard: React.FC = () => {
       <header className="px-6 py-4 md:py-8 flex items-center justify-between shrink-0 z-20 bg-background-dark/90 backdrop-blur-md">
         <div className="flex items-center gap-3 md:gap-6">
           <div className="relative">
-            <img className="w-11 h-11 md:w-14 md:h-14 rounded-2xl object-cover border-2 border-primary" src="https://picsum.photos/seed/profile/200" />
+            <img className="w-11 h-11 md:w-14 md:h-14 rounded-2xl object-cover border-2 border-primary" src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} />
             <div className="absolute bottom-0 right-0 w-3 h-3 md:w-4 md:h-4 bg-primary rounded-full border-2 border-background-dark"></div>
           </div>
           <div>
             <p className="text-[9px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest">Metabolic Status</p>
-            <h1 className="text-lg md:text-2xl font-black dark:text-white">Alex Rivera</h1>
+            <h1 className="text-lg md:text-2xl font-black dark:text-white">{user?.displayName || 'User'}</h1>
           </div>
         </div>
         <div className="flex items-center gap-4">
