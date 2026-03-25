@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { analyzeFoodImage } from '../services/geminiService.ts';
+import { analyzeFoodImage } from '../services/ollamaService.ts';
 
 interface ScannerProps {
   onClose: () => void;

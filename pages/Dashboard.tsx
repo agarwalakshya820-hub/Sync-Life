@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { getAdaptiveWorkout } from '../services/geminiService.ts';
+import { getAdaptiveWorkout } from '../services/ollamaService.ts';
 import { Workout } from '../types.ts';
 
 const FALLBACK_WORKOUT: Workout = {
@@ -77,41 +77,43 @@ const Dashboard: React.FC = () => {
           </div>
         )}
 
-        <section className="py-10 flex flex-col items-center justify-center">
-          {/* Circle Container */}
-          <div className="w-64 h-64 flex items-center justify-center">
-            <svg width="220" height="220" className="transform -rotate-90">
+        <section className="py-10 flex items-center justify-center">
+          <div className="relative w-64 h-64 flex items-center justify-center">
+            {/* Progress Circle */}
+            <svg className="absolute inset-0 z-0 transform -rotate-90" width="100%" height="100%">
+              {/* background circle */}
               <circle
-                cx="110"
-                cy="110"
-                r="90"
+                cx="50%"
+                cy="50%"
+                r="110"
                 stroke="#1f2937"
                 strokeWidth="14"
                 fill="none"
               />
+              {/* progress circle */}
               <circle
-                cx="110"
-                cy="110"
-                r="90"
+                cx="50%"
+                cy="50%"
+                r="110"
                 stroke="#22c55e"
                 strokeWidth="14"
                 fill="none"
                 strokeLinecap="round"
-                strokeDasharray="565"
-                strokeDashoffset="68"
+                strokeDasharray="691"
+                strokeDashoffset="83"
                 className="transition-all duration-1000"
               />
             </svg>
-          </div>
 
-          {/* Percentage BELOW circle */}
-          <div className="text-white text-5xl font-black mt-6">
-            88%
-          </div>
-
-          {/* Status text */}
-          <div className="text-primary text-xs font-black mt-2 tracking-[0.2em] uppercase">
-            Metabolic Efficiency
+            {/* Center Content */}
+            <div className="absolute flex flex-col items-center justify-center z-10">
+              <span className="text-white text-6xl font-black">
+                88%
+              </span>
+              <span className="text-slate-500 text-[10px] font-black mt-1 tracking-[0.2em] uppercase text-center px-4">
+                Metabolic Efficiency
+              </span>
+            </div>
           </div>
         </section>
 
