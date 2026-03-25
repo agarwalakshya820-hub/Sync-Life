@@ -1,9 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../components/AuthContext.tsx';
+import { auth } from '../firebase.ts';
 
 const Profile: React.FC = () => {
+  const { user } = useAuth();
+  
   // Load persisted state from localStorage
-  const [userName, setUserName] = useState(() => localStorage.getItem('ns_user_name') || 'Elena Vance');
+  const [userName, setUserName] = useState(() => user?.displayName || localStorage.getItem('ns_user_name') || 'User');
   const [userRole, setUserRole] = useState(() => localStorage.getItem('ns_user_role') || 'Elite Athlete • NutriSync AI Elite');
   const [nameColor, setNameColor] = useState(() => localStorage.getItem('ns_name_color') || '#ffffff');
   
@@ -14,6 +18,12 @@ const Profile: React.FC = () => {
   
   const targetScore = 88;
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (user?.displayName && !localStorage.getItem('ns_user_name')) {
+      setUserName(user.displayName);
+    }
+  }, [user]);
 
   const colors = [
     { name: 'Default', value: '#ffffff' },
@@ -66,7 +76,7 @@ const Profile: React.FC = () => {
 
   const handleSignOut = () => {
     console.log("Profile: Sign out clicked");
-    alert("Signing out...");
+    auth.signOut();
   };
 
   const toggleEdit = () => {
@@ -155,7 +165,7 @@ const Profile: React.FC = () => {
               <img 
                 alt="Profile" 
                 className="w-full h-full rounded-full object-cover brightness-50 contrast-125" 
-                src="https://picsum.photos/seed/elena/400/400"
+                src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`}
               />
               {/* Score Overlay Centered in Avatar */}
               <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">

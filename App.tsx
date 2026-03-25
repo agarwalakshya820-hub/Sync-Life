@@ -1,19 +1,29 @@
 
 import React, { useState } from 'react';
 import { NavTab } from './types.ts';
-import Landing from './pages/Landing.tsx';
 import Dashboard from './pages/Dashboard.tsx';
 import Scanner from './pages/Scanner.tsx';
 import MealPlanner from './pages/MealPlanner.tsx';
 import Profile from './pages/Profile.tsx';
 import Navigation from './components/Navigation.tsx';
+import Login from './pages/Login.tsx';
+import { AuthProvider, useAuth } from './components/AuthContext.tsx';
+import { auth } from './firebase.ts';
 
-const App: React.FC = () => {
-  const [hasOnboarded, setHasOnboarded] = useState(false);
+const AppContent: React.FC = () => {
+  const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<NavTab>(NavTab.HOME);
 
-  if (!hasOnboarded) {
-    return <Landing onStart={() => setHasOnboarded(true)} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
   }
 
   const renderContent = () => {
@@ -76,6 +86,12 @@ const App: React.FC = () => {
               <span className="material-icons-round">add</span>
               Quick Scan
             </button>
+            <button 
+              onClick={() => auth.signOut()}
+              className="w-full mt-4 text-slate-500 hover:text-coral text-[10px] font-black uppercase tracking-widest transition-all"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       )}
@@ -108,6 +124,14 @@ const App: React.FC = () => {
         )}
       </div>
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 
