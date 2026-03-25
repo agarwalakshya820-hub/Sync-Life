@@ -221,11 +221,20 @@ const MealPlanner: React.FC = () => {
       </header>
 
       {/* Calendar */}
-      <div ref={scrollRef} className="px-6 py-6 overflow-x-auto flex gap-4 shrink-0 hide-scrollbar scroll-smooth snap-x snap-mandatory">
+      <div ref={scrollRef} className="px-6 py-6 md:py-10 overflow-x-auto flex gap-4 shrink-0 hide-scrollbar scroll-smooth snap-x snap-mandatory bg-background-dark/30">
         {calendarDays.map((day, index) => (
-          <button key={day.id} ref={selectedDateId === day.id ? activeItemRef : null} onClick={() => setSelectedDateId(day.id)} className={`flex-shrink-0 w-16 h-24 flex flex-col items-center justify-center rounded-3xl transition-all transform snap-center ${selectedDateId === day.id ? 'bg-primary text-black shadow-lg scale-105' : 'bg-slate-800 text-slate-400 border border-slate-700/50'}`}>
-            <span className="text-[9px] font-black uppercase mb-1">{index === 0 ? 'Now' : day.name}</span>
-            <span className="text-2xl font-black">{day.date}</span>
+          <button 
+            key={day.id} 
+            ref={selectedDateId === day.id ? activeItemRef : null} 
+            onClick={() => setSelectedDateId(day.id)} 
+            className={`flex-shrink-0 w-16 h-24 md:w-20 md:h-28 flex flex-col items-center justify-center rounded-3xl transition-all transform snap-center ${
+              selectedDateId === day.id 
+                ? 'bg-primary text-black shadow-lg scale-105' 
+                : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:bg-slate-800'
+            }`}
+          >
+            <span className="text-[9px] md:text-[10px] font-black uppercase mb-1">{index === 0 ? 'Now' : day.name}</span>
+            <span className="text-2xl md:text-3xl font-black">{day.date}</span>
           </button>
         ))}
       </div>
@@ -233,7 +242,7 @@ const MealPlanner: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-6 pb-36 hide-scrollbar scroll-smooth">
         {/* Error UI Banner */}
         {error && (
-          <div className="mb-6 animate-in fade-in slide-in-from-top-2">
+          <div className="mb-6 animate-in fade-in slide-in-from-top-2 max-w-2xl mx-auto">
             <div className="bg-coral/10 border border-coral/20 rounded-3xl p-5 flex flex-col gap-3">
               <div className="flex items-center gap-3">
                 <span className="material-icons-round text-coral">cloud_off</span>
@@ -245,23 +254,55 @@ const MealPlanner: React.FC = () => {
         )}
 
         {/* List Section */}
-        <section className="space-y-6">
-          <h2 className="text-xl font-black px-1">Daily Protocol</h2>
+        <section className="space-y-6 max-w-5xl mx-auto">
+          <div className="flex items-center justify-between px-1 mb-8">
+            <h2 className="text-2xl md:text-3xl font-black">Daily Protocol</h2>
+            <div className="hidden md:flex gap-2">
+              <span className="bg-slate-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-700">2,450 Kcal Target</span>
+              <span className="bg-slate-800 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-700">High Protein</span>
+            </div>
+          </div>
+
           {loading ? (
-            <div className="space-y-6">{[1, 2, 3, 4].map(i => <div key={i} className="h-28 bg-slate-800/50 rounded-3xl animate-pulse" />)}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map(i => <div key={i} className="h-32 md:h-40 bg-slate-800/50 rounded-[2.5rem] animate-pulse" />)}
+            </div>
           ) : (
-            <div className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {meals && (Object.entries(meals) as [string, Meal][]).map(([type, meal]) => (
-                <div key={type} onClick={() => setSelectedMeal({type, data: meal})} className="relative flex bg-slate-800 p-4 rounded-3xl items-center gap-5 border border-slate-700/50 active:scale-[0.98] transition-all">
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 bg-slate-900 shadow-md">
+                <div 
+                  key={type} 
+                  onClick={() => setSelectedMeal({type, data: meal})} 
+                  className="group relative flex bg-slate-800/40 p-5 md:p-6 rounded-[2.5rem] items-center gap-6 border border-slate-700/50 active:scale-[0.98] hover:bg-slate-800/80 transition-all cursor-pointer"
+                >
+                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-3xl overflow-hidden shrink-0 bg-slate-900 shadow-xl group-hover:scale-105 transition-transform">
                     <img className="w-full h-full object-cover" src={imageUrls[type]} onError={(e) => (e.target as HTMLImageElement).src = `https://loremflickr.com/500/500/healthy,food?lock=${meal.name.length}`} />
                   </div>
                   <div className="flex-1">
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{type}</span>
-                    <h3 className="text-base font-black leading-tight line-clamp-1">{meal.name}</h3>
-                    <p className="text-xs font-bold text-primary mt-1">{meal.kcal} kcal</p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[9px] md:text-[10px] font-black text-primary uppercase tracking-widest">{type}</span>
+                      <div className="w-1 h-1 rounded-full bg-slate-600"></div>
+                      <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">{meal.kcal} kcal</span>
+                    </div>
+                    <h3 className="text-lg md:text-xl font-black leading-tight group-hover:text-primary transition-colors">{meal.name}</h3>
+                    <div className="flex gap-3 mt-3">
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black text-slate-500 uppercase">P</span>
+                        <span className="text-xs font-black">{meal.protein}g</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black text-slate-500 uppercase">C</span>
+                        <span className="text-xs font-black">{meal.carbs}g</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] font-black text-slate-500 uppercase">F</span>
+                        <span className="text-xs font-black">{meal.fats}g</span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="material-icons-round text-slate-600">chevron_right</span>
+                  <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-slate-600 group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                    <span className="material-icons-round">chevron_right</span>
+                  </div>
                 </div>
               ))}
             </div>
