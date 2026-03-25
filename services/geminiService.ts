@@ -1,8 +1,22 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+let aiInstance: GoogleGenAI | null = null;
+
+const getAI = () => {
+  if (aiInstance) return aiInstance;
+  
+  const apiKey = process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error("Gemini API key is missing. Please set GEMINI_API_KEY in your environment variables.");
+  }
+  
+  aiInstance = new GoogleGenAI({ apiKey });
+  return aiInstance;
+};
 
 export const analyzeFoodImage = async (base64Image: string) => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: [
@@ -37,6 +51,7 @@ export const analyzeFoodImage = async (base64Image: string) => {
 };
 
 export const getAdaptiveWorkout = async (macros: any, goals: string) => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Based on current intake: ${JSON.stringify(macros)} and user goal: ${goals}, suggest a specific workout.`,
@@ -60,6 +75,7 @@ export const getAdaptiveWorkout = async (macros: any, goals: string) => {
 };
 
 export const getSmartMealPlan = async (userPreferences: string) => {
+  const ai = getAI();
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: `Generate a premium one-day meal plan for a ${userPreferences} user.`,

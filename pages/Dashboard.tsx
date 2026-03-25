@@ -3,6 +3,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { getAdaptiveWorkout } from '../services/geminiService.ts';
 import { Workout } from '../types.ts';
 import { useAuth } from '../components/AuthContext.tsx';
+import { db } from '../firebase.ts';
+import { collection, query, where, onSnapshot, Timestamp } from 'firebase/firestore';
 
 const FALLBACK_WORKOUT: Workout = {
   name: "Maintenance Protocol",
@@ -19,24 +21,15 @@ const Dashboard: React.FC = () => {
   const [recommendation, setRecommendation] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dailyStats, setDailyStats] = useState({ protein: 0, carbs: 0, fats: 0, calories: 0 });
+  const [efficiency, setEfficiency] = useState(0);
 
-  const fetchRecommendation = useCallback(async (force = false) => {
+  const fetchRecommendation = useCallback(async (macros: any) => {
     setLoading(true);
     setError(null);
 
-    if (!force) {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        try {
-          setRecommendation(JSON.parse(cached));
-          setLoading(false);
-          return;
-        } catch (e) { localStorage.removeItem(CACHE_KEY); }
-      }
-    }
-
     try {
-      const workout = await getAdaptiveWorkout({ protein: 85, carbs: 210, fats: 42, calories: 1850 }, "Maintenance");
+      const workout = await getAdaptiveWorkout(macros, "Maintenance");
       setRecommendation(workout);
       localStorage.setItem(CACHE_KEY, JSON.stringify(workout));
     } catch (err: any) {
@@ -49,8 +42,42 @@ const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchRecommendation();
-  }, [fetchRecommendation]);
+    if (!user) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startOfToday = Timestamp.fromDate(today);
+
+    const q = query(
+      collection(db, 'scannedFood'),
+      where('uid', '==', user.uid),
+      where('createdAt', '>=', startOfToday)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      let p = 0, c = 0, f = 0, cal = 0;
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        p += data.protein || 0;
+        c += data.carbs || 0;
+        f += data.fats || 0;
+        cal += data.calories || 0;
+      });
+      
+      const stats = { protein: Math.round(p), carbs: Math.round(c), fats: Math.round(f), calories: Math.round(cal) };
+      setDailyStats(stats);
+      
+      // Calculate efficiency (e.g., target 2500 kcal)
+      const target = 2500;
+      const eff = Math.min(Math.round((stats.calories / target) * 100), 100);
+      setEfficiency(eff);
+
+      // Fetch recommendation based on new stats
+      fetchRecommendation(stats);
+    });
+
+    return () => unsubscribe();
+  }, [user, fetchRecommendation]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background-dark">
@@ -111,8 +138,7 @@ const Dashboard: React.FC = () => {
                   fill="none"
                   strokeLinecap="round"
                   strokeDasharray="691"
-                  strokeDashoffset="83"
-                  style={{ strokeDasharray: '880', strokeDashoffset: '105' }}
+                  strokeDashoffset={691 - (691 * efficiency) / 100}
                   className="md:r-[140] transition-all duration-1000"
                 />
               </svg>
@@ -120,7 +146,7 @@ const Dashboard: React.FC = () => {
               {/* Center Content */}
               <div className="absolute flex flex-col items-center justify-center z-10">
                 <span className="text-white text-6xl md:text-8xl font-black">
-                  88%
+                  {efficiency}%
                 </span>
                 <span className="text-slate-500 text-[10px] md:text-[12px] font-black mt-1 tracking-[0.2em] uppercase text-center px-4">
                   Metabolic Efficiency
@@ -160,12 +186,16 @@ const Dashboard: React.FC = () => {
             </section>
 
             <div className="grid grid-cols-3 gap-4">
-              {[{l:'PRO',v:85,c:'text-blue-400'},{l:'CARB',v:210,c:'text-orange-400'},{l:'FAT',v:42,c:'text-emerald-400'}].map(m => (
+              {[
+                {l:'PRO',v:dailyStats.protein,c:'text-blue-400', p: Math.min((dailyStats.protein/150)*100, 100)},
+                {l:'CARB',v:dailyStats.carbs,c:'text-orange-400', p: Math.min((dailyStats.carbs/300)*100, 100)},
+                {l:'FAT',v:dailyStats.fats,c:'text-emerald-400', p: Math.min((dailyStats.fats/80)*100, 100)}
+              ].map(m => (
                 <div key={m.l} className="bg-slate-800/50 p-6 rounded-[2rem] border border-slate-700/50 text-center hover:bg-slate-800 transition-all">
                   <p className="text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">{m.l}</p>
                   <p className={`text-2xl md:text-3xl font-black ${m.c}`}>{m.v}g</p>
                   <div className="mt-4 h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
-                    <div className={`h-full ${m.c.replace('text', 'bg')}`} style={{ width: '70%' }}></div>
+                    <div className={`h-full ${m.c.replace('text', 'bg')}`} style={{ width: `${m.p}%` }}></div>
                   </div>
                 </div>
               ))}

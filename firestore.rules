@@ -23,6 +23,18 @@ service cloud.firestore {
     //   - meals: map (required) - Map of meal types to meal data
     //   - createdAt: timestamp (required) - Creation timestamp
     //
+    // Collection: scannedFood
+    // Document ID: auto-generated
+    // Fields:
+    //   - uid: string (required) - Owner's UID
+    //   - name: string (required) - Name of the food
+    //   - calories: number (required) - Calories
+    //   - protein: number (optional) - Protein
+    //   - carbs: number (optional) - Carbs
+    //   - fats: number (optional) - Fats
+    //   - confidence: number (optional) - AI confidence
+    //   - createdAt: timestamp (required) - Creation timestamp
+    //
     // ===============================================================
 
     // ===============================================================
@@ -80,6 +92,14 @@ service cloud.firestore {
              data.meals is map;
     }
 
+    function isValidScannedFood(data) {
+      return hasRequiredFields(['uid', 'name', 'calories', 'createdAt']) &&
+             hasOnlyAllowedFields(['uid', 'name', 'calories', 'protein', 'carbs', 'fats', 'confidence', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.name is string &&
+             data.calories is number;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -95,6 +115,13 @@ service cloud.firestore {
       allow read: if isDocOwner() || isAdmin();
       allow create: if isAuthenticated() && isValidMealPlan(request.resource.data);
       allow update: if isDocOwner() && isValidMealPlan(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /scannedFood/{foodId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidScannedFood(request.resource.data);
+      allow update: if isDocOwner() && isValidScannedFood(request.resource.data);
       allow delete: if isDocOwner() || isAdmin();
     }
 

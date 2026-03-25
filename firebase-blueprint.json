@@ -28,6 +28,22 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "date", "meals"]
+    },
+    "ScannedFood": {
+      "title": "ScannedFood",
+      "description": "Nutritional data from a scanned food item",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Owner's UID" },
+        "name": { "type": "string" },
+        "calories": { "type": "number" },
+        "protein": { "type": "number" },
+        "carbs": { "type": "number" },
+        "fats": { "type": "number" },
+        "confidence": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "calories"]
     }
   },
   "firestore": {
@@ -38,6 +54,10 @@
     "/mealPlans/{planId}": {
       "schema": "MealPlan",
       "description": "User meal plans"
+    },
+    "/scannedFood/{foodId}": {
+      "schema": "ScannedFood",
+      "description": "Scanned food logs"
     }
   }
 }

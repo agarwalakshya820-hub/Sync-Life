@@ -1,18 +1,23 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { analyzeFoodImage } from '../services/geminiService.ts';
+import { useAuth } from '../components/AuthContext.tsx';
+import { db } from '../firebase.ts';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface ScannerProps {
   onClose: () => void;
 }
 
 const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
+  const { user } = useAuth();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<any>(null);
+  const [logging, setLogging] = useState(false);
 
   useEffect(() => {
     const startCamera = async () => {
@@ -52,11 +57,33 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         setResult(data);
       } catch (err: any) {
         console.error("Scanner Analysis failed", err);
-        // Display the actual error message from the service
         setError(err.message || "Analysis synchronization failed. Try again.");
       } finally {
         setAnalyzing(false);
       }
+    }
+  };
+
+  const handleConfirmAndLog = async () => {
+    if (!user || !result) return;
+    setLogging(true);
+    try {
+      await addDoc(collection(db, 'scannedFood'), {
+        uid: user.uid,
+        name: result.name,
+        calories: result.calories || result.kcal || 0,
+        protein: result.protein || 0,
+        carbs: result.carbs || 0,
+        fats: result.fats || 0,
+        confidence: result.confidence || 1,
+        createdAt: serverTimestamp()
+      });
+      onClose();
+    } catch (err) {
+      console.error("Error logging food:", err);
+      setError("Failed to log food. Please try again.");
+    } finally {
+      setLogging(false);
     }
   };
 
@@ -145,11 +172,18 @@ const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
               <div className="flex gap-4">
                 <button 
-                  onClick={onClose}
-                  className="flex-1 bg-primary text-black font-black py-5 rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all hover:brightness-110"
+                  onClick={handleConfirmAndLog}
+                  disabled={logging}
+                  className="flex-1 bg-primary text-black font-black py-5 rounded-2xl shadow-xl shadow-primary/20 flex items-center justify-center gap-3 active:scale-95 transition-all hover:brightness-110 disabled:opacity-50"
                 >
-                  <span className="material-icons-round">check_circle</span>
-                  Confirm & Log
+                  {logging ? (
+                    <div className="w-6 h-6 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span className="material-icons-round">check_circle</span>
+                      Confirm & Log
+                    </>
+                  )}
                 </button>
                 <button 
                   onClick={() => { setResult(null); setError(null); }}

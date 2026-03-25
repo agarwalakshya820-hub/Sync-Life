@@ -2,6 +2,9 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getSmartMealPlan } from '../services/geminiService.ts';
 import { Meal } from '../types.ts';
+import { useAuth } from '../components/AuthContext.tsx';
+import { db } from '../firebase.ts';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 interface Day {
   name: string;
@@ -10,7 +13,6 @@ interface Day {
   id: string;
 }
 
-const STORAGE_PREFIX = 'nutrisync_meals_';
 const STOP_WORDS = new Set(['with', 'and', 'served', 'side', 'fresh', 'organic', 'homemade', 'hot', 'cold', 'healthy', 'delicious', 'premium', 'sync', 'protocol', 'intake', 'daily', 'bowl', 'of', 'on', 'a', 'an', 'the']);
 const STYLE_LAYER = ['dark', 'moody', 'noir', 'minimalist', 'luxury-food-photography', 'cinematic-lighting', 'high-contrast'];
 
@@ -67,6 +69,7 @@ const MEAL_IMAGE_MAPPING: Record<string, string[]> = {
 };
 
 const MealPlanner: React.FC = () => {
+  const { user } = useAuth();
   const [meals, setMeals] = useState<Record<string, Meal> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -112,43 +115,55 @@ const MealPlanner: React.FC = () => {
   };
 
   const generateMeals = useCallback(async (force = false) => {
-    const cacheKey = `${STORAGE_PREFIX}${selectedDateId}`;
+    if (!user) return;
+    
+    const planId = `${user.uid}_${selectedDateId}`;
+    const planRef = doc(db, 'mealPlans', planId);
+    
     setLoading(true);
     setError(null);
 
-    // 1. Try Cache First
+    // 1. Try Firestore First
     if (!force) {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        try {
-          const parsed = JSON.parse(cached);
-          setMeals(parsed);
-          updateImages(parsed);
+      try {
+        const planDoc = await getDoc(planRef);
+        if (planDoc.exists()) {
+          const data = planDoc.data();
+          setMeals(data.meals);
+          updateImages(data.meals);
           setLoading(false);
           return;
-        } catch (e) { localStorage.removeItem(cacheKey); }
+        }
+      } catch (err) {
+        console.error("Firestore fetch error:", err);
       }
     }
 
-    // 2. Try Gemini API with Try/Catch
+    // 2. Try Gemini API
     try {
       const plan = await getSmartMealPlan("High Protein Wellness");
       setMeals(plan);
       updateImages(plan);
-      localStorage.setItem(cacheKey, JSON.stringify(plan));
+      
+      // Save to Firestore
+      await setDoc(planRef, {
+        uid: user.uid,
+        date: selectedDateId,
+        meals: plan,
+        createdAt: serverTimestamp()
+      });
+      
+      showToast("AI Sync Complete");
     } catch (err: any) {
       console.error("Gemini API error:", err);
-      
-      // 3. Graceful Fallback
       setError(err.message || "Synchronization intermittent. Using fallback plan.");
-      
       setMeals(FALLBACK_PLAN);
       updateImages(FALLBACK_PLAN);
       showToast("Using fallback nutritional protocol.");
     } finally {
       setLoading(false);
     }
-  }, [selectedDateId]);
+  }, [selectedDateId, user]);
 
   const updateImages = (plan: Record<string, Meal>) => {
     const newUrls: Record<string, string> = {};
@@ -159,14 +174,16 @@ const MealPlanner: React.FC = () => {
   };
 
   useEffect(() => {
-    generateMeals();
+    if (user) {
+      generateMeals();
+    }
     if (scrollRef.current && activeItemRef.current) {
       scrollRef.current.scrollTo({
         left: activeItemRef.current.offsetLeft - (scrollRef.current.offsetWidth / 2) + (activeItemRef.current.offsetWidth / 2),
         behavior: 'smooth'
       });
     }
-  }, [selectedDateId, generateMeals]);
+  }, [selectedDateId, generateMeals, user]);
 
   return (
     <main className="h-full flex flex-col overflow-hidden bg-background-dark pointer-events-auto text-white relative">

@@ -15,6 +15,10 @@ const Login: React.FC = () => {
       console.error("Login failed:", err);
       if (err.code === 'auth/unauthorized-domain') {
         setError("This domain is not authorized for login. Please add it to your Firebase Console -> Authentication -> Settings -> Authorized domains.");
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError("Google Sign-In is not enabled in your Firebase project. Please enable it in Firebase Console -> Authentication -> Sign-in method.");
+      } else if (err.code === 'auth/popup-blocked') {
+        setError("The login popup was blocked by your browser. Please allow popups for this site and try again.");
       } else {
         setError(err.message || "Login failed. Please try again.");
       }
@@ -40,8 +44,36 @@ const Login: React.FC = () => {
         </p>
 
         {error && (
-          <div className="mb-6 bg-coral/10 border border-coral/20 rounded-2xl p-4 text-coral text-xs font-black uppercase tracking-widest">
-            {error}
+          <div className="mb-6 bg-coral/10 border border-coral/20 rounded-2xl p-4 text-coral text-xs font-black uppercase tracking-widest text-left">
+            <p className="mb-2">{error}</p>
+            {error.includes("authorized domains") && (
+              <div className="mt-4 space-y-3">
+                <div className="bg-white/5 p-3 rounded-xl border border-white/10 flex items-center justify-between">
+                  <code className="text-[10px] text-white select-all">sync-life-five.vercel.app</code>
+                  <span className="text-[8px] font-black text-slate-500 uppercase">Copy this</span>
+                </div>
+                <a 
+                  href="https://console.firebase.google.com/project/gen-lang-client-0258984892/authentication/settings" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-white text-black text-center py-3 rounded-xl font-black block active:scale-95 transition-all text-[10px]"
+                >
+                  Go to Firebase Console →
+                </a>
+              </div>
+            )}
+            {error.includes("Google Sign-In is not enabled") && (
+              <div className="mt-4">
+                <a 
+                  href="https://console.firebase.google.com/project/gen-lang-client-0258984892/authentication/providers" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="bg-white text-black text-center py-3 rounded-xl font-black block active:scale-95 transition-all text-[10px]"
+                >
+                  Enable Google Sign-In →
+                </a>
+              </div>
+            )}
           </div>
         )}
 

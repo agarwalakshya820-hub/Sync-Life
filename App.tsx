@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, Component, ErrorInfo, ReactNode } from 'react';
 import { NavTab } from './types.ts';
 import Dashboard from './pages/Dashboard.tsx';
 import Scanner from './pages/Scanner.tsx';
@@ -9,6 +9,45 @@ import Navigation from './components/Navigation.tsx';
 import Login from './pages/Login.tsx';
 import { AuthProvider, useAuth } from './components/AuthContext.tsx';
 import { auth } from './firebase.ts';
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean, error: Error | null }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-background-dark flex flex-col items-center justify-center p-10 text-center">
+          <div className="w-20 h-20 bg-coral/10 rounded-3xl flex items-center justify-center mb-8">
+            <span className="material-icons-round text-coral text-4xl">error_outline</span>
+          </div>
+          <h1 className="text-3xl font-black text-white mb-4 tracking-tight">Something went wrong</h1>
+          <p className="text-slate-400 text-sm font-medium mb-8 max-w-md leading-relaxed">
+            {this.state.error?.message || "An unexpected error occurred. Please try refreshing the page."}
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-white text-black font-black px-8 py-4 rounded-2xl active:scale-95 transition-all"
+          >
+            Refresh App
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -129,9 +168,11 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 

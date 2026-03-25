@@ -28,21 +28,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const userDoc = await getDoc(userRef);
           
           if (!userDoc.exists()) {
+            const email = currentUser.email || `${currentUser.uid}@nutrisync.ai`;
             await setDoc(userRef, {
               uid: currentUser.uid,
-              email: currentUser.email,
-              displayName: currentUser.displayName,
-              photoURL: currentUser.photoURL,
+              email: email,
+              displayName: currentUser.displayName || 'Anonymous User',
+              photoURL: currentUser.photoURL || '',
               createdAt: serverTimestamp(),
               lastLogin: serverTimestamp(),
               role: 'user'
             });
+            setIsAdmin(email === 'agarwalakshya820@gmail.com');
           } else {
             // Update last login
             await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
-            setIsAdmin(userDoc.data()?.role === 'admin' || currentUser.email === 'agarwalakshya820@gmail.com');
+            const userData = userDoc.data();
+            setIsAdmin(userData?.role === 'admin' || currentUser.email === 'agarwalakshya820@gmail.com');
           }
         } catch (error) {
+          console.error("Auth profile sync failed:", error);
+          // If it's a permission error, it might be because the rules are not deployed or incorrect
           handleFirestoreError(error, OperationType.WRITE, `users/${currentUser.uid}`);
         }
       } else {
