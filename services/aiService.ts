@@ -172,58 +172,68 @@ export const getAdaptiveWorkout = async (macros: any, goals: string): Promise<Wo
 };
 
 export const getSmartMealPlan = async (userPreferences: string): Promise<MealPlan> => {
-  const gemini = getGemini();
-  if (gemini) {
-    const response = await gemini.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Generate a premium one-day meal plan for a ${userPreferences} user.`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: GeminiType.OBJECT,
-          properties: {
-            breakfast: { $ref: "#/definitions/meal" },
-            lunch: { $ref: "#/definitions/meal" },
-            dinner: { $ref: "#/definitions/meal" },
-            snack: { $ref: "#/definitions/meal" }
-          },
-          definitions: {
-            meal: {
-              type: GeminiType.OBJECT,
-              properties: {
-                name: { type: GeminiType.STRING },
-                kcal: { type: GeminiType.NUMBER },
-                protein: { type: GeminiType.NUMBER },
-                carbs: { type: GeminiType.NUMBER },
-                fats: { type: GeminiType.NUMBER },
-                imagePromptKeywords: { type: GeminiType.STRING },
-                preparationSteps: { type: GeminiType.ARRAY, items: { type: GeminiType.STRING } },
-                customizations: { type: GeminiType.ARRAY, items: { type: GeminiType.STRING } }
-              },
-              required: ["name", "kcal", "protein", "carbs", "fats", "preparationSteps"]
-            }
-          },
-          required: ["breakfast", "lunch", "dinner", "snack"]
+  try {
+    const gemini = getGemini();
+    if (gemini) {
+      const response = await gemini.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Generate a premium one-day meal plan for a ${userPreferences} user.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: GeminiType.OBJECT,
+            properties: {
+              breakfast: { $ref: "#/definitions/meal" },
+              lunch: { $ref: "#/definitions/meal" },
+              dinner: { $ref: "#/definitions/meal" },
+              snack: { $ref: "#/definitions/meal" }
+            },
+            definitions: {
+              meal: {
+                type: GeminiType.OBJECT,
+                properties: {
+                  name: { type: GeminiType.STRING },
+                  kcal: { type: GeminiType.NUMBER },
+                  protein: { type: GeminiType.NUMBER },
+                  carbs: { type: GeminiType.NUMBER },
+                  fats: { type: GeminiType.NUMBER },
+                  imagePromptKeywords: { type: GeminiType.STRING },
+                  preparationSteps: { type: GeminiType.ARRAY, items: { type: GeminiType.STRING } },
+                  customizations: { type: GeminiType.ARRAY, items: { type: GeminiType.STRING } }
+                },
+                required: ["name", "kcal", "protein", "carbs", "fats", "preparationSteps"]
+              }
+            },
+            required: ["breakfast", "lunch", "dinner", "snack"]
+          }
         }
-      }
-    });
-    return JSON.parse(response.text || '{}');
+      });
+      return JSON.parse(response.text || '{}');
+    }
+
+    const groq = getGroq();
+    if (groq) {
+      const response = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "user",
+            content: `Generate a premium one-day meal plan for a ${userPreferences} user. Return ONLY a JSON object with breakfast, lunch, dinner, snack. Each meal must have: name, kcal, protein, carbs, fats, imagePromptKeywords, preparationSteps (array), customizations (array).`
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+      return JSON.parse(response.choices[0].message.content || '{}');
+    }
+  } catch (err) {
+    console.error("AI Meal Plan Error:", err);
   }
 
-  const groq = getGroq();
-  if (groq) {
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "user",
-          content: `Generate a premium one-day meal plan for a ${userPreferences} user. Return ONLY a JSON object with breakfast, lunch, dinner, snack. Each meal must have: name, kcal, protein, carbs, fats, imagePromptKeywords, preparationSteps (array), customizations (array).`
-        }
-      ],
-      response_format: { type: "json_object" }
-    });
-    return JSON.parse(response.choices[0].message.content || '{}');
-  }
-
-  throw new Error("AI Service missing.");
+  // Return a generic plan if AI fails
+  return {
+    breakfast: { name: "Oatmeal Bowl", kcal: 350, protein: 12, carbs: 45, fats: 8, preparationSteps: ["Cook oats", "Add fruit"], imagePromptKeywords: "oatmeal", customizations: [] },
+    lunch: { name: "Chicken Salad", kcal: 450, protein: 35, carbs: 15, fats: 20, preparationSteps: ["Grill chicken", "Mix greens"], imagePromptKeywords: "chicken salad", customizations: [] },
+    dinner: { name: "Baked Salmon", kcal: 550, protein: 40, carbs: 10, fats: 25, preparationSteps: ["Season salmon", "Bake at 400F"], imagePromptKeywords: "salmon", customizations: [] },
+    snack: { name: "Greek Yogurt", kcal: 150, protein: 15, carbs: 10, fats: 5, preparationSteps: ["Eat yogurt"], imagePromptKeywords: "yogurt", customizations: [] }
+  };
 };

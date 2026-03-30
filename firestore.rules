@@ -50,13 +50,12 @@ service cloud.firestore {
     }
 
     function isDocOwner() {
-      return isAuthenticated() && request.auth.uid == resource.data.uid;
+      return isAuthenticated() && (resource == null || request.auth.uid == resource.data.uid);
     }
 
     function isAdmin() {
       return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          (request.auth.token.email == "agarwalakshya820@gmail.com" && request.auth.token.email_verified == true));
+        (request.auth.token.email == "agarwalakshya820@gmail.com" && request.auth.token.email_verified == true);
     }
 
     function isValidEmail(email) {
