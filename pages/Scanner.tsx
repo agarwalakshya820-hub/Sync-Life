@@ -1,6 +1,6 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { analyzeFoodImage } from '../services/geminiService.ts';
+import { analyzeFoodImage } from '../services/aiService.ts';
 import { useAuth } from '../components/AuthContext.tsx';
 import { db } from '../firebase.ts';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';

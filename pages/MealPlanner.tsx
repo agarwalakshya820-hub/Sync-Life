@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { getSmartMealPlan } from '../services/geminiService.ts';
+import { getSmartMealPlan } from '../services/aiService.ts';
 import { Meal } from '../types.ts';
 import { useAuth } from '../components/AuthContext.tsx';
 import { db } from '../firebase.ts';

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { getAdaptiveWorkout } from '../services/geminiService.ts';
+import { getAdaptiveWorkout } from '../services/aiService.ts';
 import { Workout } from '../types.ts';
 import { useAuth } from '../components/AuthContext.tsx';
 import { db } from '../firebase.ts';

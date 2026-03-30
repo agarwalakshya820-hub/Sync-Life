@@ -33,7 +33,7 @@ export interface Meal {
   customizations: string[];
 }
 
-export interface MealPlan {
+export interface MealPlan extends Record<string, Meal> {
   breakfast: Meal;
   lunch: Meal;
   dinner: Meal;

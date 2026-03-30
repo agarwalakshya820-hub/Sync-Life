@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     const geminiApiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const groqApiKey = env.GROQ_API_KEY || process.env.GROQ_API_KEY;
     
     return {
       server: {
@@ -18,7 +19,8 @@ export default defineConfig(({ mode }) => {
       ],
       define: {
         'process.env.API_KEY': JSON.stringify(geminiApiKey),
-        'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey)
+        'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey),
+        'process.env.GROQ_API_KEY': JSON.stringify(groqApiKey)
       },
       resolve: {
         alias: {
