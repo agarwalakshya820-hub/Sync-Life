@@ -7,16 +7,41 @@ let geminiInstance: GoogleGenAI | null = null;
 let groqInstance: Groq | null = null;
 
 const getGemini = () => {
-  const apiKey = process.env.GEMINI_API_KEY || import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey || apiKey === "undefined") return null;
-  if (!geminiInstance) geminiInstance = new GoogleGenAI({ apiKey });
+  // Check multiple possible locations for the API key
+  // We use string literals for process.env to ensure Vite's 'define' can replace them
+  const apiKey = 
+    process.env.GEMINI_API_KEY || 
+    process.env.VITE_GEMINI_API_KEY ||
+    import.meta.env.VITE_GEMINI_API_KEY ||
+    (window as any)._GEMINI_API_KEY;
+
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    console.warn("AI Service: Gemini API Key not found in any location.");
+    return null;
+  }
+  
+  if (!geminiInstance) {
+    console.log("AI Service: Initializing Gemini with key starting with:", apiKey.substring(0, 4));
+    geminiInstance = new GoogleGenAI({ apiKey });
+  }
   return geminiInstance;
 };
 
 const getGroq = () => {
-  const apiKey = process.env.GROQ_API_KEY || import.meta.env.VITE_GROQ_API_KEY;
-  if (!apiKey || apiKey === "undefined") return null;
-  if (!groqInstance) groqInstance = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+  const apiKey = 
+    process.env.GROQ_API_KEY || 
+    process.env.VITE_GROQ_API_KEY ||
+    import.meta.env.VITE_GROQ_API_KEY ||
+    (window as any)._GROQ_API_KEY;
+
+  if (!apiKey || apiKey === "undefined" || apiKey === "") {
+    return null;
+  }
+  
+  if (!groqInstance) {
+    console.log("AI Service: Initializing Groq with key starting with:", apiKey.substring(0, 4));
+    groqInstance = new Groq({ apiKey, dangerouslyAllowBrowser: true });
+  }
   return groqInstance;
 };
 

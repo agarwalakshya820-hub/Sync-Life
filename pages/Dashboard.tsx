@@ -88,7 +88,10 @@ const Dashboard: React.FC = () => {
             <div className="absolute bottom-0 right-0 w-3 h-3 md:w-4 md:h-4 bg-primary rounded-full border-2 border-background-dark"></div>
           </div>
           <div>
-            <p className="text-[9px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest">Metabolic Status</p>
+            <p className="text-[9px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest flex items-center gap-1.5">
+              Metabolic Status
+              <span className={`w-1.5 h-1.5 rounded-full ${error?.includes("AI Service missing") ? 'bg-coral animate-pulse' : 'bg-primary'}`}></span>
+            </p>
             <h1 className="text-lg md:text-2xl font-black dark:text-white">{user?.displayName || 'User'}</h1>
           </div>
         </div>

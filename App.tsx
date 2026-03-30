@@ -42,7 +42,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
           </div>
           <h1 className="text-3xl font-black text-white mb-4 tracking-tight">Something went wrong</h1>
           <p className="text-slate-400 text-sm font-medium mb-8 max-w-md leading-relaxed">
-            {this.state.error?.message || "An unexpected error occurred. Please try refreshing the page."}
+            {this.state.error?.message?.includes("AI Service missing") 
+              ? "The AI Service is not configured. Please ensure your GEMINI_API_KEY is set in Vercel and you have redeployed."
+              : (this.state.error?.message || "An unexpected error occurred. Please try refreshing the page.")}
           </p>
           <button 
             onClick={() => window.location.reload()}

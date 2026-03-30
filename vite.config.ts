@@ -18,9 +18,10 @@ export default defineConfig(({ mode }) => {
         tailwindcss(),
       ],
       define: {
-        'process.env.API_KEY': JSON.stringify(geminiApiKey),
         'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey),
-        'process.env.GROQ_API_KEY': JSON.stringify(groqApiKey)
+        'process.env.VITE_GEMINI_API_KEY': JSON.stringify(geminiApiKey),
+        'process.env.GROQ_API_KEY': JSON.stringify(groqApiKey),
+        'process.env.VITE_GROQ_API_KEY': JSON.stringify(groqApiKey)
       },
       resolve: {
         alias: {
